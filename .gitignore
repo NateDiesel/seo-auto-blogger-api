@@ -1,0 +1,15 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore environment and secrets
+.env
+.env.*
+api/.env
+api/.env.*
+api/api_keys.db
+
+# Ignore virtual environments
+env/
+api/env/

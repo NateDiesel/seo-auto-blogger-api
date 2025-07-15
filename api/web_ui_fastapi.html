@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Auto-Blogger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="max-w-4xl mx-auto p-6 mt-10 bg-gray-800 shadow-lg rounded-lg">
+        <h1 class="text-3xl font-bold text-center mb-6">AI Auto-Blogger</h1>
+        
+        <div class="flex justify-end">
+            <button id="toggleDarkMode" class="bg-gray-700 text-white px-4 py-2 rounded">🌙 Dark Mode</button>
+        </div>
+
+        <!-- Blog Generation Form -->
+        <form id="blogForm" class="mb-6">
+            <label class="block mb-2 font-semibold">Blog Topic:</label>
+            <input type="text" id="topic" class="w-full p-2 border rounded bg-gray-700 text-white" required>
+            
+            <label class="block mt-4 mb-2 font-semibold">Word Count:</label>
+            <select id="word_count" class="w-full p-2 border rounded bg-gray-700 text-white">
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+                <option value="2000">2000</option>
+            </select>
+            
+            <label class="block mt-4 mb-2 font-semibold">Tone:</label>
+            <select id="tone" class="w-full p-2 border rounded bg-gray-700 text-white">
+                <option value="informative">Informative</option>
+                <option value="persuasive">Persuasive</option>
+                <option value="casual">Casual</option>
+            </select>
+            
+            <label class="block mt-4 mb-2 font-semibold">Style:</label>
+            <select id="style" class="w-full p-2 border rounded bg-gray-700 text-white">
+                <option value="article">Article</option>
+                <option value="listicle">Listicle</option>
+                <option value="story">Story</option>
+            </select>
+            
+            <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded w-full hover:bg-blue-600">Generate Blog</button>
+        </form>
+        
+        <div id="loading" class="hidden text-center text-yellow-400 font-semibold">Generating Blog...</div>
+        
+        <!-- Display Generated Blog -->
+        <div id="blogResult" class="hidden p-4 bg-gray-700 border rounded mt-6">
+            <h2 class="text-xl font-semibold">Generated Blog:</h2>
+            <p id="blogContent" class="mt-2"></p>
+            <button id="copyContent" class="mt-4 bg-green-500 text-white px-4 py-2 rounded w-full hover:bg-green-600">📋 Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('blogForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('blogResult').classList.add('hidden');
+            
+            const topic = document.getElementById('topic').value;
+            const wordCount = document.getElementById('word_count').value;
+            const tone = document.getElementById('tone').value;
+            const style = document.getElementById('style').value;
+            
+            const response = await fetch('/generate-blog', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic, word_count: parseInt(wordCount), tone, style })
+            });
+            
+            const data = await response.json();
+            document.getElementById('loading').classList.add('hidden');
+            
+            if (data.blog) {
+                document.getElementById('blogContent').textContent = data.blog;
+                document.getElementById('blogResult').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('copyContent').addEventListener('click', function() {
+            const content = document.getElementById('blogContent').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Copied to clipboard!');
+            });
+        });
+
+        document.getElementById('toggleDarkMode').addEventListener('click', function() {
+            document.body.classList.toggle('bg-gray-100');
+            document.body.classList.toggle('text-black');
+        });
+    </script>
+</body>
+</html>
