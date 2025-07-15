@@ -1,54 +1,20 @@
-from flask import Flask, render_template, request, jsonify
-import requests
-from bs4 import BeautifulSoup
 import re
-import time
 
-app = Flask(__name__)
+def slugify(text: str) -> str:
+    return re.sub(r'\W+', '-', text.lower()).strip('-')
 
-def fetch_blog_content(url):
-    """Fetches the title and content from a given blog URL."""
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        title = soup.title.string if soup.title else "No Title Found"
-        paragraphs = soup.find_all('p')
-        content = '\n'.join([p.get_text() for p in paragraphs[:5]])  # Fetching first 5 paragraphs
-        return title, content
-    except Exception as e:
-        return "Error fetching blog title", "Error fetching blog content"
+def generate_blog_post(topic: str, style: str, length: str) -> dict:
+    title = topic.title()
+    slug = slugify(title)
+    tags = [word for word in topic.split() if word.lower() not in {"the", "is", "a", "of", "in", "on"}]
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+    intro = f"Welcome to our {style} article on {topic}.\n\n"
+    body = "In this article, we’ll explore the implications of this topic in detail.\n\n" * (2 if length == "short" else 4)
+    outro = "Thanks for reading! Be sure to follow us for more insights.\n"
 
-@app.route('/fetch_content', methods=['POST'])
-def fetch_content():
-    data = request.get_json()
-    blog_url = data.get('blog_url')
-    if not re.match(r'^(http|https)://', blog_url):
-        return jsonify({"error": "Invalid URL format."})
-    
-    title, content = fetch_blog_content(blog_url)
-    return jsonify({"title": title, "content": content})
-
-@app.route('/repurpose', methods=['POST'])
-def repurpose():
-    data = request.form
-    title = data.get('title')
-    content = data.get('content')
-    platforms = data.getlist('platforms')
-    
-    # Simulating content repurposing delay
-    time.sleep(2)
-    
-    repurposed_content = {}
-    for platform in platforms:
-        repurposed_content[platform] = f"[Optimized for {platform}] {content[:250]}..."
-    
-    return jsonify(repurposed_content)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    return {
+        "title": title,
+        "slug": slug,
+        "tags": tags,
+        "content": intro + body + outro
+    }
